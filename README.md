@@ -4,7 +4,7 @@
 
 ### 1. 任务定义
 
-在人体检测的过程中，目前大部分新的检测算法模型都是采用pytorch框架进行训练， 但是由于MTK9652的开发板采用的是tflite方式部署（version 1.13），因此会出现算子不兼容的情况，比如upsample算子实现的方式会有差别，导致训练时精度较高，部署在板子上时精度下降严重。
+在人体检测的过程中，大部分新的检测算法模型都是采用pytorch框架进行训练，模型部署采用tflite方式，  由于pytorch中upsample算子实现方式和开发板中upsample算子实现方式不同（采用的是tflite方式部署（version  1.13）），因此会出现算子不兼容的情况，导致训练时精度较高，部署在板子上时精度下降严重。
 
 解决的思路：
 
@@ -126,7 +126,7 @@ def bilinear_interpolation_naive(src, dst_size, align_corners=False):
    return dst
 ```
 
-MTK9652的开发板采用的是tf1.13中upsample算子，与现在pytorch的upsample算子实现原理基本一致，但是实现的细节稍微有点不相同，这个不同点需要仔细阅读tensorflow和pytorch的具体实现方式，从下面不同点可以看出，直接修改pytorch源码中upsample算子比较直接，但是需要重新编译pytorch框架和相关依赖库（torchvision）, 不利于框架迁移到其他机器，另外一种方式是通过pytorch框架的扩展功能，手写upsample的正向和反向传播（C++和CUDA两个版本），下面的算子扩展的方式实现了和原生框架相同的结果，如果想修改成tensorflow中upsample的效果，将扩展的C++和CUDA代码中的方式1换成方式2即可。
+开发板采用的是tf1.13中upsample算子，与现在pytorch的upsample算子实现原理基本一致，但是实现的细节稍微有点不相同，这个不同点需要仔细阅读tensorflow和pytorch的具体实现方式，从下面不同点可以看出，直接修改pytorch源码中upsample算子比较直接，但是需要重新编译pytorch框架和相关依赖库（torchvision）, 打包成`.whl`迁移到其他机器，另外一种方式是通过pytorch框架的扩展功能，手写upsample的正向和反向传播（C++和CUDA两个版本），下面的算子扩展的方式实现了和原生框架相同的结果，如果想修改成tensorflow中upsample的效果，将扩展的C++和CUDA代码中的方式1换成方式2即可。
 
 ```python
 ##### pytorch算子——————————>> 方式1
